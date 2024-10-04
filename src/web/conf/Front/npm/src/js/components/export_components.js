@@ -5,7 +5,7 @@ import { NotFound } from "@components/404";
 import { Auth42 } from "@components/login/auth42";
 import { PongMain } from "@components/pong/pongMain";
 import { PongLocal } from "@components/pong/pongLocal";
-// import { PongRemote } from "@components/pong/pongRemote";
+import { PongRemote } from "@components/pong/pongRemote";
 // import { PongAI } from "@components/pong/pongAI";
 import { Index } from "@components/index/index";
 
@@ -18,7 +18,7 @@ window.customElements.define('auth42-component', Auth42);
 window.customElements.define('pong-main-component', PongMain);
 window.customElements.define('pong-local-component', PongLocal);
 // window.customElements.define('pong-ai-component', PongAI);
-// window.customElements.define('pong-remote', PongRemote);
+window.customElements.define('pong-remote-component', PongRemote);
 window.customElements.define('index-component', Index);
 
 export default {
@@ -30,6 +30,6 @@ export default {
     PongMain,
     PongLocal,
     // PongAI
-    // PongRemote,
+    PongRemote,
     Index
 };
