@@ -88,23 +88,23 @@ export class IndexConnected extends Component{
                 terminal_out.innerText += '\n' + 'Command list:\n- clear\n- ls\n- cat\n- pwd\n- whoami\n- exit';
                 break;
             case 'ls':
-                terminal_out.innerText += '\n' + 'pong.sh connect4.sh tournament.sh';
+                terminal_out.innerHTML += '<br><span style="color: green;">connect4.sh</span> <span style="color: green;">pong.sh</span> <span style="color: green;">tournament.sh</span> <span>profil.txt</span>';
                 break;
-                case './pong.sh':
-                    window.router.navigate('/pong/');
+            case './pong.sh':
+                window.router.navigate('/pong/');
+            break;
+            case './connect4.sh':
+            window.router.navigate('/connect4/');
+            break;
+            case './tournament.sh':
+                window.router.navigate('/tournament/');
                 break;
-                case './connect4.sh':
-                window.router.navigate('/connect4/');
-                break;
-                case './tournament.sh':
-                    window.router.navigate('/tournament/');
+                case 'pwd':
+                    terminal_out.innerText += '\n' + `/${user42}/ft_transcendence`;
                     break;
-                    case 'pwd':
-                        terminal_out.innerText += '\n' + `/${user42}/ft_transcendence`;
-                        break;
-                        case 'whoami':
-                            terminal_out.innerText += '\n' + `${user42}`;
-                break;
+                    case 'whoami':
+                        terminal_out.innerText += '\n' + `${user42}`;
+            break;
             case 'exit':
                 terminal_out.innerText += '\n' + `Goodbye ${user42}`;
                 setTimeout(() => {

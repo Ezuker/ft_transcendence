@@ -25,6 +25,7 @@ export class Tournament extends Component{
                         <label for="player4">Player 4:</label>
                         <input type="text" id="player4" class="player-input" />
                     </div>
+                    <br>
                 <button id="start-tournament-button">Start Tournament</button>
                     </div>
                         <div id="middleLine"></div>
@@ -271,7 +272,7 @@ export class Tournament extends Component{
         const BALL_SPEED_X = 10;
         const BALL_SPEED_Y = 1;
         const PADDLE_SPEED = 7;
-        const WINNING_SCORE = 5;
+        const WINNING_SCORE = 2;
         const OVERLAY_DISPLAY_TIME = 3000;
 
         const ball = document.getElementById("ball");
@@ -324,30 +325,48 @@ export class Tournament extends Component{
         function handleKeyDown(e) {
             handleKey(e, true);
         }
+   
 
         async function handleClick(e) {
-            const overlay = document.getElementById("overlay-before-start");
+            const overlayBefore = document.getElementById("overlay-before-start");
             const overlayTournament = document.getElementById("login-form");
-            if (e.target.id === "start-button") {
-                overlay.style.display = "none";
+            
+            if (e.target.id === "start-button" && overlayTournament.style.display == "none") {
                 const player1 = document.getElementById("player1").value;
                 const player2 = document.getElementById("player2").value;
                 const player3 = document.getElementById("player3").value;
                 const player4 = document.getElementById("player4").value;
-        
-                alert(`${player1} vs ${player2} and ${player3} vs ${player4}`);
-        
+
+                overlayBefore.style.display = "none";
+
+                alert(`Match 1: ${player1} vs ${player2}`);
                 const winner1 = await initGame(player1, player2)
+                alert(`Match 1, Winner: ${winner1}`);
+
+                alert(`Match 2: ${player3} vs ${player4}`);
                 const winner2 = await initGame(player3, player4);
-                alert(`Match 1: ${player1} vs ${player2} - Winner: ${winner1}`);
-                alert(`Match 2: ${player3} vs ${player4} - Winner: ${winner2}`);
+                alert(`Match 2, Winner: ${winner2}`);
+
+                alert(`Final: ${winner1} vs ${winner2}`);
                 const finalWinner = await initGame(winner1, winner2);
-                alert(`Final: ${winner1} vs ${winner2} - Winner: ${finalWinner}`);
+                alert(`Final Winner: ${finalWinner}`);
+
+                resetGame();
+                overlayBefore.style.display = "block";
+                overlayTournament.style.display = "block";
         
             }
             else if (e.target.id === "start-tournament-button") {
                 if (requirementTournament()) {
+                    const player1 = document.getElementById("player1").value;
+                    const player2 = document.getElementById("player2").value;
+                    const player3 = document.getElementById("player3").value;
+                    const player4 = document.getElementById("player4").value;
                     overlayTournament.style.display = "none";
+                    setTimeout (() => {
+                        alert(`                                    Match 1:   ${player1} VS ${player2}
+                                    Match 2:   ${player3} VS ${player4}`);
+                    },1000);
                 }
                 else {
                     return;
@@ -524,20 +543,26 @@ export class Tournament extends Component{
         }
         
         function gameLoop(p1, p2) {
-            if (upPressed) movePaddle('2', -1);
-            if (downPressed) movePaddle('2', 1);
-            if (wPressed) movePaddle('1', -1);
-            if (sPressed) movePaddle('1', 1);
-            
-            if (!ballScored && (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE)) {
-                showOverlay(`Player ${score_1 === WINNING_SCORE ? "1" : "2"} wins!`, score_1, score_2);
-                setTimeout(() => {
-                    resetGame();
-                    overlay.style.display = "none";
-                }, OVERLAY_DISPLAY_TIME);
-                return score_1 === WINNING_SCORE ? p1 : p2;
-            }
-            requestAnimationFrame(gameLoop);
+            return new Promise((resolve) => {
+                function loop() {
+                    if (upPressed) movePaddle('2', -1);
+                    if (downPressed) movePaddle('2', 1);
+                    if (wPressed) movePaddle('1', -1);
+                    if (sPressed) movePaddle('1', 1);
+        
+                    if (!ballScored && (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE)) {
+                        showOverlay(`Player ${score_1 === WINNING_SCORE ? "1" : "2"} wins!`, score_1, score_2);
+                        setTimeout(() => {
+                            resetGame();
+                            overlay.style.display = "none";
+                            resolve(score_1 === WINNING_SCORE ? p1 : p2);
+                        }, OVERLAY_DISPLAY_TIME);
+                        return;
+                    }
+                    requestAnimationFrame(loop);
+                }
+                loop();
+            }); 
         }
         
      

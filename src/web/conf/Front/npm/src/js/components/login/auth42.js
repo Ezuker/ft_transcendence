@@ -86,7 +86,7 @@ export class Auth42 extends Component {
                 terminal_out.innerText += '\n' + 'Command list:\n- clear\n- ls\n- pwd\n- whoami\n- exit';
                 break;
             case 'ls':
-                terminal_out.innerText += '\n' + 'login42.sh';
+                terminal_out.innerHTML += '<br><span style="color: green;">login42.sh</span>';
                 break;
             case 'pwd':
                 terminal_out.innerText += '\n' + `/Guest/`;
