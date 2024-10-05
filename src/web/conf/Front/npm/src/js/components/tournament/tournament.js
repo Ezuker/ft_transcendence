@@ -25,34 +25,35 @@ export class Tournament extends Component{
                         <label for="player4">Player 4:</label>
                         <input type="text" id="player4" class="player-input" />
                     </div>
-                    <button id="start-tournament-button">Start Tournament</button>
-                </div>
-                <div id="middleLine"></div>
-                <div class="ball" id="ball">
-                    <div class="ballstyle"></div>
-                </div>
-                <div id="player_1_paddle" class="paddle_1"></div>
-                <div id="player_2_paddle" class="paddle_2"></div>
-                <div class="text">
-                    <div id="player_1_score" class="score_1">0</div>
-                    <div id="player_2_score" class="score_2">0</div>
-                    <div id="message"></div>
-                </div>
-                <div id="overlay-before-start">
-                    <div class="controls">
-                        <div class="text-before">Are you ready?</div>
-                        <div class="player-controls">
-                            <div class="player-name">Player 1</div>
-                            <div class="key">W</div>
-                            <div class="key">S</div>
-                        </div>
-                        <div class="player-controls">
-                            <div class="player-name">Player 2</div>
-                            <div class="key">ArrowUp</div>
-                            <div class="key">ArrowDown</div>
-                        </div>
+                <button id="start-tournament-button">Start Tournament</button>
                     </div>
-                </div>
+                        <div id="middleLine"></div>
+                        <div class="ball" id="ball">
+                            <div class="ballstyle"></div>
+                        </div>
+                        <div id="player_1_paddle" class="paddle_1"></div>
+                        <div id="player_2_paddle" class="paddle_2"></div>
+                        <div class="text">
+                            <div id="player_1_score" class="score_1">0</div>
+                            <div id="player_2_score" class="score_2">0</div>
+                            <div id="message"></div>
+                        </div>
+                        <div id="overlay-before-start">
+                            <div class="controls">
+                                <div class="text-before">Are you ready?</div>
+                                <div class="player-controls">
+                                    <div class="player-name">Player 1</div>
+                                    <div class="key">W</div>
+                                    <div class="key">S</div>
+                                </div>
+                                <div class="player-controls">
+                                    <div class="player-name">Player 2</div>
+                                    <div class="key">ArrowUp</div>
+                                    <div class="key">ArrowDown</div>
+                                </div>
+                            </div>
+                            <button id="start-button">Start</button>
+                    </div>
                 <div id="overlay">
                     <div id="overlay-title">PONG</div>
                     <div id="overlay-text"></div>
@@ -65,8 +66,19 @@ export class Tournament extends Component{
     style() {
         return `
         <style>
-            #login-form {
+
+            #basePong {
+                height: 100%; /* If you modify the size u have to modify the condition in JS */
+                width: 100%;
                 position: relative;
+                background: black;
+                font-family: 'Press Start 2P', cursive;
+                user-select: none;
+                overflow: hidden;
+            }
+
+            #login-form {
+                position: absolute;
                 width: 100%;
                 height: 100%;
                 background: rgba(0, 0, 0, 0.9);
@@ -76,15 +88,9 @@ export class Tournament extends Component{
                 align-items: center;
                 font-family: 'Press Start 2P', cursive;
                 font-size: 30px;
-            }
-            #basePong {
-                height: 831px; /* If you modify the size u have to modify the condition in JS */
-                width: 1920px;
-                position: relative;
-                background: black;
-                font-family: 'Press Start 2P', cursive;
+                color: white;
                 user-select: none;
-                overflow: hidden;
+                z-index: 1;
             }
 
             .paddle_1,
@@ -286,6 +292,8 @@ export class Tournament extends Component{
         let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
         let intervalGameStart = null;
         
+
+
         function movePaddle(which, direction) {
             const paddle = document.getElementById(`player_${which}_paddle`);
             if (paddle) {
@@ -317,14 +325,37 @@ export class Tournament extends Component{
             handleKey(e, true);
         }
 
-        function handleClick(e) {
+        async function handleClick(e) {
             const overlay = document.getElementById("overlay-before-start");
+            const overlayTournament = document.getElementById("login-form");
             if (e.target.id === "start-button") {
                 overlay.style.display = "none";
-                initGame();
+                const player1 = document.getElementById("player1").value;
+                const player2 = document.getElementById("player2").value;
+                const player3 = document.getElementById("player3").value;
+                const player4 = document.getElementById("player4").value;
+        
+                alert(`${player1} vs ${player2} and ${player3} vs ${player4}`);
+        
+                const winner1 = await initGame(player1, player2)
+                const winner2 = await initGame(player3, player4);
+                alert(`Match 1: ${player1} vs ${player2} - Winner: ${winner1}`);
+                alert(`Match 2: ${player3} vs ${player4} - Winner: ${winner2}`);
+                const finalWinner = await initGame(winner1, winner2);
+                alert(`Final: ${winner1} vs ${winner2} - Winner: ${finalWinner}`);
+        
+            }
+            else if (e.target.id === "start-tournament-button") {
+                if (requirementTournament()) {
+                    overlayTournament.style.display = "none";
+                }
+                else {
+                    return;
+                }
             }
         }
-        
+
+
         // Event listeners for key presses
         // Dont forget to remove the event listeners when the game is over for performance reasons and for SPA
         document.addEventListener("click", handleClick);
@@ -333,7 +364,7 @@ export class Tournament extends Component{
         
         function resetGame() {
             clearInterval(intervalGameStart);
-            ballPositionX = initialBallPos.left;
+            ballPositionX = initialBallPos.left; 
             ballPositionY = initialBallPos.top;
             ball.style.left = ballPositionX + "px";
             ball.style.top = ballPositionY + "px";
@@ -431,7 +462,7 @@ export class Tournament extends Component{
                 }, OVERLAY_DISPLAY_TIME);
             }
             
-            if (ballRect.right > 1920 && !ballScored) {
+            if (ballRect.right > window.innerWidth && !ballScored) {
                 score_1 += 1;
                 ballScored = true;
                 var score = document.getElementById("player_1_score");
@@ -477,21 +508,22 @@ export class Tournament extends Component{
             if (basePong === null) return;
     
             checkCollision();
-            if (ballPositionX >= 1920 - ball.offsetWidth || ballPositionX <= 0) {
+            if (ballPositionX >= window.innerWidth - ball.offsetWidth || ballPositionX <= 0) {
                 ballSpeedX *= -1;
             }
     
-            if (ballPositionY >= 831 - ball.offsetHeight - 1 || ballPositionY <= 0) {
+            if (ballPositionY >= window.innerHeight - ball.offsetHeight - 1 || ballPositionY <= 0) {
                 ballSpeedY *= -1;
             }
             if (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE) {
+
                 return;
             }
     
             requestAnimationFrame(moveBall);
         }
         
-        function gameLoop() {
+        function gameLoop(p1, p2) {
             if (upPressed) movePaddle('2', -1);
             if (downPressed) movePaddle('2', 1);
             if (wPressed) movePaddle('1', -1);
@@ -501,19 +533,32 @@ export class Tournament extends Component{
                 showOverlay(`Player ${score_1 === WINNING_SCORE ? "1" : "2"} wins!`, score_1, score_2);
                 setTimeout(() => {
                     resetGame();
-                    window.router.navigate("/pong/");
+                    overlay.style.display = "none";
                 }, OVERLAY_DISPLAY_TIME);
-                return;
+                return score_1 === WINNING_SCORE ? p1 : p2;
             }
             requestAnimationFrame(gameLoop);
         }
         
-        async function initGame() {
+     
+        async function initGame(p1, p2) {
             await startGame();
-            gameLoop();
             moveBall();
+            return await gameLoop(p1, p2);
         } 
+    
+        function requirementTournament()
+        {
+            if (document.getElementById("player1").value == "" || document.getElementById("player2").value == "" || document.getElementById("player3").value == "" || document.getElementById("player4").value == "") {
+                alert("Please enter all player names");
+                return false;
+            }
+            else {
+                return true
+            }
+        }
     }
+
 
     CustomDOMContentUnload() {
         this.gameReset();
