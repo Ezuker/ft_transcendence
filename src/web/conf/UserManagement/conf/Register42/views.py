@@ -226,6 +226,7 @@ def register_42(request):
 
 
 @csrf_exempt
+authenticate()
 @require_POST
 def logout_view(request):
     logout(request)

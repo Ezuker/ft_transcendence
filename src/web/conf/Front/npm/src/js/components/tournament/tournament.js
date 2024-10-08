@@ -126,13 +126,14 @@ export class Tournament extends Component {
 
             /* Pong */
             #basePong {
-                height: 100vh;
-                width: 100vw;
+                height: 623px;
+                width: 1440px;
                 position: relative;
                 background: black;
                 font-family: 'Press Start 2P', cursive;
                 user-select: none;
                 overflow: hidden;
+                left: 12%;
             }
 
             .paddle_1,
@@ -479,7 +480,7 @@ export class Tournament extends Component {
                 }
             }
             
-            if (ballRect.left < 42 && !ballScored) {
+            if (ballRect.left < 250 && !ballScored) {
                 score_2 += 1;
                 ballScored = true;
                 var score = document.getElementById("player_2_score");
@@ -493,7 +494,7 @@ export class Tournament extends Component {
                 }, OVERLAY_DISPLAY_TIME);
             }
             
-            if (ballRect.right > 500 && !ballScored) {
+            if (ballRect.right > 1440 && !ballScored) {
                 score_1 += 1;
                 ballScored = true;
                 var score = document.getElementById("player_1_score");
@@ -539,11 +540,11 @@ export class Tournament extends Component {
             if (basePong === null) return;
     
             checkCollision();
-            if (ballPositionX >= 42 - ball.offsetWidth || ballPositionX <= 0) {
+            if (ballPositionX >= 1440 - ball.offsetWidth || ballPositionX <= 0) {
                 ballSpeedX *= -1;
             }
     
-            if (ballPositionY >= 42 - ball.offsetHeight - 1 || ballPositionY <= 0) {
+            if (ballPositionY >= 623 - ball.offsetHeight - 1 || ballPositionY <= 0) {
                 ballSpeedY *= -1;
             }
             if (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE) {
