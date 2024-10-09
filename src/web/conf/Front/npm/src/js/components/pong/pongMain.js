@@ -1,8 +1,11 @@
 import { Component } from "@js/component";
+import { getCookie } from "@js/utils/cookie";
+
 
 export class PongMain extends Component{
     constructor(){
         super();
+        this.ws = null;
     }
 
     render(){
@@ -146,12 +149,35 @@ export class PongMain extends Component{
     animation: shake 0.5s;
 }
 
-        </style>
-        `;
-        
-    }
+</style>
+`;
 
+}
+    
     CustomDOMContentLoaded(){
+
+
+        this.ws = new WebSocket("wss://" + window.location.host + ":" + window.location.port + "/wss-game/pong/");
+        this.user = getCookie("user42");
+
+        this.ws.onopen = () => {
+            console.log("WS OPEN");
+        }
+
+        this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            console.log(data);
+            if (data.type === "game_created") {
+                console.log("GAME CREATED");
+                console.log(data.game_uuid);
+                window.router.navigate(`/pong/remote?id=${data.game_uuid}`);
+            }
+        }
+
+        this.ws.onclose = () => {
+            console.log("Disconnected from the server");
+        };
         document.addEventListener("click", (e) => {
             if (e.target.id === "pong-local") {
                 window.router.navigate("/pong/local");
@@ -171,9 +197,10 @@ export class PongMain extends Component{
             }
 
             if (e.target.id === "pong-remote-join") {
+                console.log("JOIN");
                 const room = document.getElementById("pong-remote-room").value;
                 if (room) {
-                    window.router.navigate(`/pong/remote/${room}`);
+                    window.router.navigate(`/pong/remote?id=${room}`);
                 } else {
                     const joinButton = document.getElementById('pong-remote-join');
                     joinButton.classList.add('shake');
@@ -188,8 +215,10 @@ export class PongMain extends Component{
 
             if (e.target.id === "pong-remote-create") {
                 // create an ID for the room 7 characters long numbers and letters caps onyl
-                const room = Math.random().toString(36).substring(2, 9).toUpperCase();
-                window.router.navigate(`/pong/remote?id=${room}`);
+
+                this.ws.send(JSON.stringify({type: "create", player1: this.user}));
+                // console.log(room);
+                // window.router.navigate(`/pong/remote?id=${room}`);
             }
             
         });
@@ -198,5 +227,8 @@ export class PongMain extends Component{
 
     CustomDOMContentUnload(){
         console.log("DOM CONTENT UNLOAD.");
+        if (this.ws && this.ws.readyState === 1) {
+            this.ws.close();
+        }
     }
 }

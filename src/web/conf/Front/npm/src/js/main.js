@@ -12,7 +12,7 @@ const router = new Router(target, {
   '/pong/local': new Route('/pong/local', 'pong-local-component'),
   '/matchmaking/': new Route('/matchmaking/', 'matchmaking-component'),
   // '/pong/ai': new Route('/pong/ai', 'pong-ai-component'),
-  '/pong/remote': new Route('/pong/remote', 'pong-remote-component', "^id=[A-Z0-9]{7}$"),
+  '/pong/remote': new Route('/pong/remote', 'pong-remote-component', "^id=[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"),
   '/connect4': new Route('/connect4', 'connect4-component', "^id=[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"),
   '/tournament/': new Route(`/tournament/`, 'tournament-component'),
 });

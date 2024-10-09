@@ -7,12 +7,13 @@ export class Router {
     }
 
     async init() {
-        let route = window.location.pathname;
+        let route = window.location.pathname + window.location.search;
+
         this.navigate(route);
         this.popStateHandler();
     }
 
-    async navigate(path) {  
+    async navigate(path) {
         let regex = null;
         if (path.includes('?')) {
             regex = path.split('?')[1];
