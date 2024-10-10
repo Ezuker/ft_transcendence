@@ -10,10 +10,19 @@ export class PongMain extends Component{
             <div id="overlay">
                 <div id="overlay-title">PONG</div>
                 <div id="overlay-text">Choose your game</div>
+<<<<<<< Updated upstream
                 <button id="pong-ai">Pong against AI</button>
                 <button id="pong-local">Pong 1v1 Local</button>
                 <button id="pong-remote">Pong 1v1 Remote</button>
                 <button id="reset-button">Quit</button>
+=======
+                <div class="buttons">
+                    <button id="pong-ai" class="pixel-corners-active">Pong against AI</button>
+                    <button id="pong-local" class="pixel-corners">Pong 1v1 Local</button>
+                    <button id="pong-remote" class="pixel-corners">Pong 1v1 Remote</button>
+                    <button id="reset-button" class="pixel-corners">Quit</button>
+                </div>
+>>>>>>> Stashed changes
             </div>
         `;
     }
@@ -42,6 +51,14 @@ export class PongMain extends Component{
                 margin-bottom: 100px;
                 border-bottom: 5px solid white;
             }
+<<<<<<< Updated upstream
+=======
+
+            .hidden {
+                display: none;
+            }
+
+>>>>>>> Stashed changes
             #overlay-text {
                 margin-bottom: 20px;
             }

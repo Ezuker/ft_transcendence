@@ -35,6 +35,12 @@ export class PongLocal extends Component {
                         </div>
                     </div>
                     <button id="start-button">Start</button>
+                    <button id="start-settings">Settings</button>
+                    <div id="settings-menu" class="settings-menu hidden">
+                        <button id="settings-option1">Option 1</button>
+                        <button id="settings-option2">Option 2</button>
+                        <button id="settings-option3">Option 3</button>
+                    </div>
                 </div>
                 <div id="overlay">
                     <div id="overlay-title">PONG</div>
@@ -48,6 +54,42 @@ export class PongLocal extends Component {
     style() {
         return `
         <style>
+<<<<<<< Updated upstream
+=======
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: black;
+                color: #ffffff;
+                font-family: 'Press Start 2P', cursive;
+            }
+
+            .settings-menu {
+                display: none;
+            }
+
+            
+            .settings-menu.visible {
+                display: block;
+            }
+
+            #settings-option1,
+            #settings-option2,
+            #settings-option3 {
+                width: 150px;
+                height: 50px !important;
+                padding: 10px !important;
+            }
+
+            #hd {
+                color: #ffffff;
+                text-align: center;
+                padding: 20px;
+                background-color: black;
+                border-bottom: 2px solid #333;
+            }
+>>>>>>> Stashed changes
             #basePong {
                 height: 831px; /* If you modify the size u have to modify the condition in JS */
                 width: 1920px;
@@ -257,6 +299,10 @@ export class PongLocal extends Component {
         let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
         let intervalGameStart = null;
         
+        document.getElementById('settings-button').addEventListener('click', function() {
+            const menu = document.getElementById('settings-menu');
+            menu.classList.toggle('visible');
+        });
         function movePaddle(which, direction) {
             const paddle = document.getElementById(`player_${which}_paddle`);
             if (paddle) {
