@@ -343,11 +343,49 @@ export class PongRemote extends Component {
         `;
     }
 
+    sendMessage(direction, isKeyDown, player, uuid) {
+        if (this.ws) {
+            this.ws.send(JSON.stringify({ 
+                type: "move", 
+                direction: direction, 
+                isKeyDown: isKeyDown, 
+                player: player,
+                game_uuid: uuid}));
+        }
+    }
+
     CustomDOMContentLoaded() {
-        this.ws = new WebSocket("wss://" + window.location.host + ":" + window.location.port + "/wss-game/pong/");
+        this.ws = new WebSocket("wss://" + window.location.host + "/wss-game/pong/");
         this.user = getCookie("user42");
         let intervalTimer = null;
         this.interval = null;
+        let hisPaddle = 2;
+        let oppsPaddle = 1;
+        let oppsUp = false;
+        let oppsDown = false;
+        const BALL_SPEED_X = 10;
+        const BALL_SPEED_Y = 1;
+        const PADDLE_SPEED = 7;
+        const WINNING_SCORE = 5;
+        const OVERLAY_DISPLAY_TIME = 3000;
+
+        const ball = document.getElementById("ball");
+        const paddle_1 = document.getElementById("player_1_paddle");
+        const paddle_2 = document.getElementById("player_2_paddle");
+
+        let ballScored = false;
+        let ballSpeedX = BALL_SPEED_X; 
+        let ballSpeedY = BALL_SPEED_Y;
+    
+        let ballPositionX = getBallPosition().left;
+        let ballPositionY = getBallPosition().top;
+        const initialBallPos = { left: ballPositionX, top: ballPositionY };
+        
+        let score_1 = 0;
+        let score_2 = 0;
+    
+        let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
+        let intervalGameStart = null;
 
         this.ws.onopen = () => {
             console.log("WS OPEN");
@@ -381,10 +419,21 @@ export class PongRemote extends Component {
             const data = JSON.parse(event.data);
             console.log(data);
             if (data.type === "game_joined") {
-                console.log("Game joined");
                 updateUIForOpponent(data.player1 === this.user ? data.player2 : data.player1);
+                // Check if the player1 is the current user or not and give him the control of the correct paddle
+                if (data.player1 === this.user)
+                {
+                    hisPaddle = 1;
+                    oppsPaddle = 2;
+                }
             } else if (data.type === "game_not_found") {
                 this.ws.send(JSON.stringify({ type: "create", player1: this.user }));
+            } else if (data.type === "game_move" && data.player !== this.user) {
+                if (data.direction === "up") {
+                    oppsUp = data.isKeyDown;
+                } else if (data.direction === "down") {
+                    oppsDown = data.isKeyDown;
+                }
             }
         }
 
@@ -400,30 +449,6 @@ export class PongRemote extends Component {
                 button.innerText = originalText;
             }, 2000);
         });
-
-        const BALL_SPEED_X = 10;
-        const BALL_SPEED_Y = 1;
-        const PADDLE_SPEED = 7;
-        const WINNING_SCORE = 5;
-        const OVERLAY_DISPLAY_TIME = 3000;
-
-        const ball = document.getElementById("ball");
-        const paddle_1 = document.getElementById("player_1_paddle");
-        const paddle_2 = document.getElementById("player_2_paddle");
-
-        let ballScored = false;
-        let ballSpeedX = BALL_SPEED_X; 
-        let ballSpeedY = BALL_SPEED_Y;
-    
-        let ballPositionX = getBallPosition().left;
-        let ballPositionY = getBallPosition().top;
-        const initialBallPos = { left: ballPositionX, top: ballPositionY };
-        
-        let score_1 = 0;
-        let score_2 = 0;
-    
-        let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
-        let intervalGameStart = null;
         
         function movePaddle(which, direction) {
             const paddle = document.getElementById(`player_${which}_paddle`);
@@ -438,15 +463,32 @@ export class PongRemote extends Component {
             }
         }
         
+        let previousWState = false;
+        let previousSState = false;
+
         function handleKey(event, isKeyDown) {
+            const searchParams = new URLSearchParams(window.location.search);
+            const gameId = searchParams.get("id");
             const keyMap = {
-                "ArrowUp": () => upPressed = isKeyDown,
-                "ArrowDown": () => downPressed = isKeyDown,
-                "KeyW": () => wPressed = isKeyDown,
-                "KeyS": () => sPressed = isKeyDown
+                "KeyW": () => {
+                    if (previousWState !== isKeyDown) {
+                        previousWState = isKeyDown;
+                        this.sendMessage("up", isKeyDown, this.user, gameId);
+                        wPressed = isKeyDown;
+                    }
+                },
+                "KeyS": () => {
+                    if (previousSState !== isKeyDown) {
+                        previousSState = isKeyDown;
+                        this.sendMessage("down", isKeyDown, this.user, gameId);
+                        sPressed = isKeyDown;
+                    }
+                }
             };
             if (keyMap[event.code]) keyMap[event.code]();
         }
+
+        handleKey = handleKey.bind(this);
 
         function handleKeyUp(e) {
             handleKey(e, false);
@@ -623,10 +665,10 @@ export class PongRemote extends Component {
         }
         
         function gameLoop() {
-            if (upPressed) movePaddle('2', -1);
-            if (downPressed) movePaddle('2', 1);
-            if (wPressed) movePaddle('1', -1);
-            if (sPressed) movePaddle('1', 1);
+            if (wPressed) movePaddle(hisPaddle, -1);
+            if (sPressed) movePaddle(hisPaddle, 1);
+            if (oppsUp)   movePaddle(oppsPaddle, -1);
+            if (oppsDown) movePaddle(oppsPaddle, 1);
             
             if (!ballScored && (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE)) {
                 showOverlay(`Player ${score_1 === WINNING_SCORE ? "1" : "2"} wins!`, score_1, score_2);

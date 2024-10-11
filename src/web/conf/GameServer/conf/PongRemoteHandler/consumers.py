@@ -70,6 +70,21 @@ class PongRemoteHandler(AsyncWebsocketConsumer):
                         'player2': self.games[game_uuid].players[1]
                     }
                 )
+        elif text_data_json['type'] == 'move':
+            direction = text_data_json['direction']
+            isKeyDown = text_data_json['isKeyDown']
+            player = text_data_json['player']
+            game_uuid = text_data_json['game_uuid']
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'game_move',
+                    'game_id': game_uuid,
+                    'player': player,
+                    'direction': direction,
+                    'isKeyDown': isKeyDown
+                }
+            )
 
     async def game_joined(self, event):
         """
@@ -99,5 +114,34 @@ class PongRemoteHandler(AsyncWebsocketConsumer):
             'type': 'game_joined',
             'game_id': game_id,
             'player1': player1,
-            'player2': player2
+            'player2': player2,
+        }))
+
+    async def game_move(self, event):
+        """
+        Handles the event when a player makes a move.
+
+        This method is triggered when a player makes a move in a game. It logs the event and sends a message to the group with the move details.
+        Args:
+            event (dict): A dictionary containing the event data.
+                - game_id (str): The ID of the game.
+                - player (str): The name or ID of the player who made the move.
+                - direction (str): The direction of the move.
+                - isKeyDown (bool): Whether the key is down or not.
+
+        Returns:
+            None
+        """
+        game_id = event['game_id']
+        player = event['player']
+        direction = event['direction']
+        isKeyDown = event['isKeyDown']
+
+        logger.info(f"Sending game_move message to group: {self.room_group_name}")
+        logger.info(f"Game move: {game_id} - {player} - {direction} - {isKeyDown}")
+        await self.send(text_data=json.dumps({
+            'type': 'game_move',
+            'player': player,
+            'direction': direction,
+            'isKeyDown': isKeyDown
         }))

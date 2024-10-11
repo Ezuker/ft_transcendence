@@ -157,7 +157,7 @@ export class PongMain extends Component{
     CustomDOMContentLoaded(){
 
 
-        this.ws = new WebSocket("wss://" + window.location.host + ":" + window.location.port + "/wss-game/pong/");
+        this.ws = new WebSocket("wss://" + window.location.host + "/wss-game/pong/");
         this.user = getCookie("user42");
 
         this.ws.onopen = () => {
