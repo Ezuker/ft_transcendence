@@ -247,7 +247,7 @@ class Connect4GameConsumer(AsyncWebsocketConsumer):
                     }
                 )
                 return
-            else:   
+            elif Connect4GameConsumer.games[self.room_name].gameFinished == False:
                 Connect4GameConsumer.games[self.room_name].timer -= 1
                 await self.channel_layer.group_send(
                     self.room_group_name,
