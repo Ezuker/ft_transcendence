@@ -3,7 +3,6 @@ import { Component } from "@js/component";
 export class Credits extends Component {
     constructor() {
         super();
-        this.isRedirect = false;
     }
 
     render() {
@@ -128,10 +127,7 @@ export class Credits extends Component {
 
     redirectTruc(event) {
         if (event.key === 'Escape') {
-            document.removeEventListener('keydown', this);
-            this.isRedirect = true;
-            if (this.isRedirect)
-                window.router.navigate('/');
+            window.router.navigate('/');
         }
     }
 
@@ -143,9 +139,8 @@ export class Credits extends Component {
         document.addEventListener('keydown', this.redirectTruc);
     }
 
-    CustomDOMUnload() {
-        this.isRedirect = false;
-        document.addEventListener('keydown', this.redirectTruc);
+    CustomDOMContentUnload() {
+        document.removeEventListener('keydown', this.redirectTruc);
         document.getElementById('back').removeEventListener('click', () => {
             window.router.navigate('/');
         });
