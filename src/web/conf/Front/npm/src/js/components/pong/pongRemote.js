@@ -1,5 +1,6 @@
 import { Component } from "@js/component";
 import { getCookie } from "@js/utils/cookie";
+import { sleep } from "@js/utils/sleep";
 
 export class PongRemote extends Component {
     constructor() {
@@ -48,9 +49,12 @@ export class PongRemote extends Component {
 
             /* PONG */
             #basePong {
-                height: 831px; /* If you modify the size u have to modify the condition in JS */
-                width: 1920px;
-                position: relative;
+                height: 600px; /* If you modify the size, you have to modify the condition in JS */
+                width: 800px;
+                position: absolute; /* Use absolute positioning */
+                top: 50%; /* Center vertically */
+                left: 50%; /* Center horizontally */
+                transform: translate(-50%, -50%); /* Offset by half of its own size */
                 background: black;
                 font-family: 'Press Start 2P', cursive;
                 user-select: none;
@@ -58,12 +62,13 @@ export class PongRemote extends Component {
                 overflow: hidden;
             }
 
+
             .paddle_1,
             .paddle_2 {
                 height: 100px;
                 width: 18px;
                 position: absolute;
-                background: white;
+                background: red;
             }
 
             .paddle_1 {
@@ -363,8 +368,6 @@ export class PongRemote extends Component {
         let oppsPaddle = 1;
         let oppsUp = false;
         let oppsDown = false;
-        const BALL_SPEED_X = 10;
-        const BALL_SPEED_Y = 1;
         const PADDLE_SPEED = 7;
         const WINNING_SCORE = 5;
         const OVERLAY_DISPLAY_TIME = 3000;
@@ -374,17 +377,16 @@ export class PongRemote extends Component {
         const paddle_2 = document.getElementById("player_2_paddle");
 
         let ballScored = false;
-        let ballSpeedX = BALL_SPEED_X; 
-        let ballSpeedY = BALL_SPEED_Y;
+        let ballSpeedX = null; 
+        let ballSpeedY = null;
     
-        let ballPositionX = getBallPosition().left;
-        let ballPositionY = getBallPosition().top;
-        const initialBallPos = { left: ballPositionX, top: ballPositionY };
+        let ballPositionX = null;
+        let ballPositionY = null;
         
         let score_1 = 0;
         let score_2 = 0;
     
-        let upPressed = false, downPressed = false, wPressed = false, sPressed = false;
+        let wPressed = false, sPressed = false;
         let intervalGameStart = null;
 
         this.ws.onopen = () => {
@@ -412,12 +414,12 @@ export class PongRemote extends Component {
             setTimeout(() => {
                 document.getElementById("overlay").style.display = "none";
                 document.getElementById("basePong").style.display = "block";
-                initGame();
-            }, 3000);
+                // initGame();
+            }, 1); // TO CHANGE 3000
         }
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log(data);
+            // console.log(data);
             if (data.type === "game_joined") {
                 updateUIForOpponent(data.player1 === this.user ? data.player2 : data.player1);
                 // Check if the player1 is the current user or not and give him the control of the correct paddle
@@ -426,6 +428,7 @@ export class PongRemote extends Component {
                     hisPaddle = 1;
                     oppsPaddle = 2;
                 }
+                initGame();
             } else if (data.type === "game_not_found") {
                 this.ws.send(JSON.stringify({ type: "create", player1: this.user }));
             } else if (data.type === "game_move" && data.player !== this.user) {
@@ -434,6 +437,32 @@ export class PongRemote extends Component {
                 } else if (data.direction === "down") {
                     oppsDown = data.isKeyDown;
                 }
+            } else if (data.type === "game_started") {
+                ball.style.background = "green";
+                ballPositionX = data.ball.x;
+                ball.style.left = ballPositionX + "px" - 10;
+                ballPositionY = data.ball.y;
+                ball.style.top = ballPositionY + "px" - 10;
+                ballSpeedX = data.ball.dx;
+                ballSpeedY = data.ball.dy;
+                paddle_1.style.top = data.player1_paddle + "px" - 50;
+                paddle_2.style.top = data.player2_paddle + "px" - 50;
+            }
+            else if (data.type === "update")
+            {
+                paddle_1.style.top = data.player1_paddle + "px";
+                paddle_2.style.top = data.player2_paddle + "px";
+            }
+            else if (data.type === "update_ball")
+            {
+                console.log(data);
+                ballPositionX = data.ball.x;
+                ball.style.left = ballPositionX + "px";
+                ballPositionY = data.ball.y;
+                ball.style.top = ballPositionY + "px";
+                ballSpeedX = data.ball.dx;
+                ballSpeedY = data.ball.dy;
+
             }
         }
 
@@ -455,11 +484,15 @@ export class PongRemote extends Component {
             if (paddle) {
                 let currentTop = parseFloat(window.getComputedStyle(paddle).top);
                 const parent = paddle.parentElement;
-                const maxBottom = parent.clientHeight - paddle.clientHeight - 5;
-                const newTop = currentTop + direction * PADDLE_SPEED;
-                if (newTop > 3 && newTop < maxBottom - 10) {
+                const maxBottom = parent.clientHeight - paddle.clientHeight;
+                let newTop = currentTop + direction * PADDLE_SPEED;
+                if (newTop < 0)
+                    newTop = 0;
+                else if (newTop > maxBottom)
+                    newTop = maxBottom;
+                // if (newTop >= 0 && newTop < maxBottom - 10) {
                     paddle.style.top = newTop + "px";
-                }
+                // }
             }
         }
         
@@ -475,6 +508,7 @@ export class PongRemote extends Component {
                         previousWState = isKeyDown;
                         this.sendMessage("up", isKeyDown, this.user, gameId);
                         wPressed = isKeyDown;
+                        console.log(paddle_1.style.top);
                     }
                 },
                 "KeyS": () => {
@@ -482,6 +516,7 @@ export class PongRemote extends Component {
                         previousSState = isKeyDown;
                         this.sendMessage("down", isKeyDown, this.user, gameId);
                         sPressed = isKeyDown;
+                        console.log(paddle_1.style.top);
                     }
                 }
             };
@@ -640,35 +675,30 @@ export class PongRemote extends Component {
             });
         }
         
-        function moveBall() {
-            ballPositionX += ballSpeedX;
-            ballPositionY += ballSpeedY;
-    
+        let previousTimestamp = performance.now();
+
+        async function moveBall(currentTimestamp) {
+            console.log("moveBall");
+
+            // Calculate delta time
+            let deltaTime = currentTimestamp - previousTimestamp;
+            previousTimestamp = currentTimestamp;
+
+            // Update ball position based on delta time
+            ballPositionX += ballSpeedX * (deltaTime / 16.67); // Assuming 60 FPS, 16.67ms per frame
+            ballPositionY += ballSpeedY * (deltaTime / 16.67);
+
             ball.style.left = ballPositionX + "px";
             ball.style.top = ballPositionY + "px";
-            const basePong = document.getElementById("basePong");
-            if (basePong === null) return;
-    
-            checkCollision();
-            if (ballPositionX >= 1920 - ball.offsetWidth || ballPositionX <= 0) {
-                ballSpeedX *= -1;
-            }
-    
-            if (ballPositionY >= 831 - ball.offsetHeight - 1 || ballPositionY <= 0) {
-                ballSpeedY *= -1;
-            }
-            if (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE) {
-                return;
-            }
-    
+
             requestAnimationFrame(moveBall);
         }
         
-        function gameLoop() {
-            if (wPressed) movePaddle(hisPaddle, -1);
-            if (sPressed) movePaddle(hisPaddle, 1);
-            if (oppsUp)   movePaddle(oppsPaddle, -1);
-            if (oppsDown) movePaddle(oppsPaddle, 1);
+        async function gameLoop() {
+            // if (wPressed) movePaddle(hisPaddle, -1);
+            // if (sPressed) movePaddle(hisPaddle, 1);
+            // if (oppsUp)   movePaddle(oppsPaddle, -1);
+            // if (oppsDown) movePaddle(oppsPaddle, 1);
             
             if (!ballScored && (score_1 === WINNING_SCORE || score_2 === WINNING_SCORE)) {
                 showOverlay(`Player ${score_1 === WINNING_SCORE ? "1" : "2"} wins!`, score_1, score_2);
@@ -682,9 +712,10 @@ export class PongRemote extends Component {
         }
         
         async function initGame() {
-            await startGame();
-            gameLoop();
-            moveBall();
+            // await startGame();
+        let current = performance.now();
+        // gameLoop();
+            moveBall(current);
         }
     }
 
