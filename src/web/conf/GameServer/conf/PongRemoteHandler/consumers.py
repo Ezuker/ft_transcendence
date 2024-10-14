@@ -98,20 +98,6 @@ class PongRemoteHandler(AsyncWebsocketConsumer):
             )
 
     async def game_joined(self, event):
-        """
-        Handles the event when a game is joined.
-
-        This method is triggered when a player joins a game. It logs the event and sends a message to the group with the game details.
-        This function will lauch the game for both players.
-        Args:
-            event (dict): A dictionary containing the event data.
-                - game_id (str): The ID of the game.
-                - player1 (str): The name or ID of the first player.
-                - player2 (str): The name or ID of the second player.
-
-        Returns:
-            None
-        """
         game_id = event['game_id']
         player1 = event['player1']
         player2 = event['player2']
@@ -128,20 +114,6 @@ class PongRemoteHandler(AsyncWebsocketConsumer):
             }))
 
     async def game_move(self, event):
-        """
-        Handles the event when a player makes a move.
-
-        This method is triggered when a player makes a move in a game. It logs the event and sends a message to the group with the move details.
-        Args:
-            event (dict): A dictionary containing the event data.
-                - game_id (str): The ID of the game.
-                - player (str): The name or ID of the player who made the move.
-                - direction (str): The direction of the move.
-                - isKeyDown (bool): Whether the key is down or not.
-
-        Returns:
-            None
-        """
         game_id = event['game_id']
         player = event['player']
         direction = event['direction']
@@ -221,9 +193,6 @@ class GamePong:
         )
     
         asyncio.create_task(self.run_game())
-
-    
-    
 
     async def run_game(self):
         while not self.game_over:
@@ -345,70 +314,3 @@ class GamePong:
         self.player2_score += 1
         if self.player2_score == 5:
             self.game_over = True
-
-    def get_score(self):
-        return {
-            'player1': self.player1_score,
-            'player2': self.player2_score
-        }
-
-    def get_winner(self):
-        if self.player1_score == 5:
-            return self.player1
-        elif self.player2_score == 5:
-            return self.player2
-        else:
-            return None
-
-    def get_loser(self):
-        if self.player1_score == 5:
-            return self.player2
-        elif self.player2_score == 5:
-            return self.player1
-        else:
-            return None
-
-    def get_game_over(self):
-        return self.game_over
-
-    def get_players(self):
-        return {
-            'player1': self.player1,
-            'player2': self.player2
-        }
-
-    def get_player_score(self, player):
-        if player == self.player1:
-            return self.player1_score
-        elif player == self.player2:
-            return self.player2_score
-        else:
-            return None
-
-    def get_opponent(self, player):
-        if player == self.player1:
-            return self.player2
-        elif player == self.player2:
-            return self.player1
-        else:
-            return None
-
-    def get_player(self, player):
-        if player == self.player1:
-            return self.player1
-        elif player == self.player2:
-            return self.player2
-        else:
-            return None
-
-    def get_player_name(self, player):
-        if player == self.player1:
-            return UserProxy.objects.get(user_id=player).user_name
-        elif player == self.player2:
-            return UserProxy.objects.get(user_id=player).user_name
-        else:
-            return None
-
-    def get_player_id(self, player):
-        if player == self.player1:
-            return User
